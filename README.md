@@ -1,3 +1,4 @@
+
 # Snapchat Memories Date Correction Utility
 
 ## Overview
@@ -5,20 +6,23 @@
 This utility is designed to correct the file dates of Snapchat memories extracted from a backup. Snapchat memory file names often include the correct date, but the file properties ("Created At" and "Modified At") may not reflect this. This program:
 
 1. Extracts the correct date from the file name.
-2. Sets the extracted date as the file's creation and modification date.
+2. Sets the extracted date as the file's creation and modification date, with a fixed time of `12:00:00`.
 3. Renames the files by:
    - Removing the date and the underscore (`_`) from the file name.
    - Replacing occurrences of `main` with `snapmem` in the file name.
 4. Copies and organizes the files into two separate directories:
    - A `_formatted` directory for processed files.
-   - A `_discarded` directory for ignored files.
+   - A `_discarded` directory for ignored or skipped files.
 
-## Features
+### Key Features
 
-- Automatically adjusts file dates using the date embedded in the file name.
-- Excludes files with unwanted patterns (`metadata`, `overlay~Snapchat`, and files ending with `overlay`) from processing.
-- Copies excluded files to a `_discarded` directory for reference.
-- Provides clear console output showing the program's progress.
+- **Date Extraction and Renaming**: Automatically adjusts file dates using the date embedded in the file name and renames the files to exclude the date, replacing "main" with "snapmem."
+- **Exclusion of Unwanted Files**: Excludes files with unwanted patterns such as:
+  - `metadata~`
+  - `overlay~Snapchat`
+  - Files ending with `overlay`
+- **Handling Skipped Files**: Files that are skipped (due to invalid dates or excluded patterns) are copied to a `_discarded` directory for reference.
+- **Clear Console Output**: Provides clear console output showing the program's progress, indicating whether a file is being processed or discarded.
 
 ## How to Use
 
@@ -61,45 +65,67 @@ The program will:
 
 12. Upload your adjusted files to any cloud storage or keep them on your PC.
 
-## Example
+## Example Input and Output
 
 ### Input Directory:
+
 ```
-  2016-07-31_b~EiQSFW1rTWFTUkVZMHMyRmxGalowYTYzQRoAGgAyAXxIAlAEYAE-main.mp4
-  b~kdady78adyawdUWAadDNwhadHDWUDKwjoiawhduanklawD-main.jpg
-  2017-08-12_overlay~SnapchatdjkWADJawkdkawdjkdabnjkadjknajkwdn.png
+SnapchatMemories/
+  2016-11-09_46f2d99b-7ef6-477f-aea2-971c97214593-main.jpg
+  2017-07-21_4139569c-3135-4a04-a1e3-40c357a3645a-main.mp4
+  2018-07-26_c4ea2009-c1f7-cc97-8bc0-c18368e536e2-overlay.jpg
+  b9eb3ab6-dc08-4650-8043-a4b25798fa84
+  media~Snapchat-318428611.zip.nomedia
   2015-09-07_metadata~zip-54061584-8a42-4ada-b960-5b784bc1a26c
+  2017-06-19_overlay~Snapchat-703606625.zip.nomedia(1)
 ```
 
 ### Output:
 
 #### Formatted Directory (`SnapchatMemories_formatted`):
+
 ```
-b~EiQSFW1rTWFTUkVZMHMyRmxGalowYTYzQRoAGgAyAXxIAlAEYAE-snapmem.mp4
+snapmemFileExample.jpg (Dates set to 2016-11-09 12:00:00)
+snapmemFileExample.mp4 (Dates set to 2017-07-21 12:00:00)
 ```
 
 #### Discarded Directory (`SnapchatMemories_discarded`):
+
 ```
-2017-08-12_overlay~SnapchatdjkWADJawkdkawdjkdabnjkadjknajkwdn.png
+2018-07-26_c4ea2009-c1f7-cc97-8bc0-c18368e536e2-overlay.jpg
+b9eb3ab6-dc08-4650-8043-a4b25798fa84
+media~Snapchat-318428611.zip.nomedia
 2015-09-07_metadata~zip-54061584-8a42-4ada-b960-5b784bc1a26c
+2017-06-19_overlay~Snapchat-703606625.zip.nomedia(1)
 ```
 
-## Console Output Example
+### Console Output Example:
+
 ```
 Enter the directory path:
-> C:\Users\Roberto\Desktop\SnapchatMemories\memories
+> C:\SnapchatMemories
 
 Fetching files...
-Found 4 files. Processing...
-Skipping file: 2017-08-12_overlay~SnapchatdjkWADJawkdkawdjkdabnjkadjknajkwdn.png (1/3)
-Copying file: 2017-08-12_overlay~SnapchatdjkWADJawkdkawdjkdabnjkadjknajkwdn.png (1/3)
-Copied file: 2017-08-12_overlay~Snapchat (1/4)
-Skipping file: 2015-09-07_metadata~zip-54061584-8a42-4ada-b960-5b784bc1a26c (2/3)
-Copying file: 2015-09-07_metadata~zip-54061584-8a42-4ada-b960-5b784bc1a26c (2/3)
-Copied file: 2015-09-07_metadata~zip-54061584-8a42-4ada-b960-5b784bc1a26c (2/3)
-Skipping file: b~kdady78adyawdUWAadDNwhadHDWUDKwjoiawhduanklawD-main.jpg (no valid date found)
-Processing file: 2016-07-31_b~EiQSFW1rTWFTUkVZMHMyRmxGalowYTYzQRoAGgAyAXxIAlAEYAE (3/3)
-Processed file: 2016-07-31_b~EiQSFW1rTWFTUkVZMHMyRmxGalowYTYzQRoAGgAyAXxIAlAEYAE (3/3)
+Found 7 files. Processing...
+Skipping file: 2018-07-26_c4ea2009-c1f7-cc97-8bc0-c18368e536e2-overlay.jpg (1/7)
+Copying file: 2018-07-26_c4ea2009-c1f7-cc97-8bc0-c18368e536e2-overlay.jpg (1/7)
+Copied file: 2018-07-26_c4ea2009-c1f7-cc97-8bc0-c18368e536e2-overlay.jpg (1/7)
+Skipping file: b9eb3ab6-dc08-4650-8043-a4b25798fa84 (2/7)
+Copying file: b9eb3ab6-dc08-4650-8043-a4b25798fa84 (2/7)
+Copied file: b9eb3ab6-dc08-4650-8043-a4b25798fa84 (2/7)
+Skipping file: media~Snapchat-318428611.zip.nomedia (3/7)
+Copying file: media~Snapchat-318428611.zip.nomedia (3/7)
+Copied file: media~Snapchat-318428611.zip.nomedia (3/7)
+Skipping file: 2015-09-07_metadata~zip-54061584-8a42-4ada-b960-5b784bc1a26c (4/7)
+Copying file: 2015-09-07_metadata~zip-54061584-8a42-4ada-b960-5b784bc1a26c (4/7)
+Copied file: 2015-09-07_metadata~zip-54061584-8a42-4ada-b960-5b784bc1a26c (4/7)
+Processing file: 2016-11-09_46f2d99b-7ef6-477f-aea2-971c97214593-main.jpg (5/7)
+Processed file: 2016-11-09_46f2d99b-7ef6-477f-aea2-971c97214593-main.jpg (5/7)
+Processing file: 2017-07-21_4139569c-3135-4a04-a1e3-40c357a3645a-main.mp4 (6/7)
+Processed file: 2017-07-21_4139569c-3135-4a04-a1e3-40c357a3645a-main.mp4 (6/7)
+Skipping file: 2017-06-19_overlay~Snapchat-703606625.zip.nomedia(1) (7/7)
+Copying file: 2017-06-19_overlay~Snapchat-703606625.zip.nomedia(1) (7/7)
+Copied file: 2017-06-19_overlay~Snapchat-703606625.zip.nomedia(1) (7/7)
 
 Processing complete. All files saved in the respective directories.
 Press 'Y' to close the console, or any other key to keep it open.
@@ -107,10 +133,9 @@ Press 'Y' to close the console, or any other key to keep it open.
 
 ## Notes
 
-- Files without a valid date in the name will be skipped and logged in the console.
+- Files without a valid date in the name or files matching excluded patterns (such as `metadata`, `overlay~Snapchat`, or those ending with `overlay`) will be copied to the `_discarded` directory.
 - Ensure the source directory path is valid and accessible.
 
 ## License
 
 This project is open-source and available under the MIT License. Feel free to contribute or suggest improvements!
-
