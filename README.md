@@ -65,42 +65,41 @@ The program will:
 
 ### Input Directory:
 ```
-SnapchatMemories/
-  2016-07-31_b~EiQSFW1rTWFTUkVZMHMyRmxGalowYTYzQRoAGgAyAXxIAlAEYAE
-  2017-08-12_overlay~Snapchat
-  2018-09-20_mainFileExample.txt
-  metadata_file.txt
+  2016-07-31_b~EiQSFW1rTWFTUkVZMHMyRmxGalowYTYzQRoAGgAyAXxIAlAEYAE-main.mp4
+  b~kdady78adyawdUWAadDNwhadHDWUDKwjoiawhduanklawD-main.jpg
+  2017-08-12_overlay~SnapchatdjkWADJawkdkawdjkdabnjkadjknajkwdn.png
+  2015-09-07_metadata~zip-54061584-8a42-4ada-b960-5b784bc1a26c
 ```
 
 ### Output:
 
 #### Formatted Directory (`SnapchatMemories_formatted`):
 ```
-snapmemFileExample.txt  (Dates set to 2018-09-20 12:00:00)
+b~EiQSFW1rTWFTUkVZMHMyRmxGalowYTYzQRoAGgAyAXxIAlAEYAE-snapmem.mp4
 ```
 
 #### Discarded Directory (`SnapchatMemories_discarded`):
 ```
-2017-08-12_overlay~Snapchat
-metadata_file.txt
+2017-08-12_overlay~SnapchatdjkWADJawkdkawdjkdabnjkadjknajkwdn.png
+2015-09-07_metadata~zip-54061584-8a42-4ada-b960-5b784bc1a26c
 ```
 
 ## Console Output Example
 ```
 Enter the directory path:
-> C:\SnapchatMemories
+> C:\Users\Roberto\Desktop\SnapchatMemories\memories
 
 Fetching files...
 Found 4 files. Processing...
-Skipping file: 2017-08-12_overlay~Snapchat (1/4)
-Copying file: 2017-08-12_overlay~Snapchat (1/4)
+Skipping file: 2017-08-12_overlay~SnapchatdjkWADJawkdkawdjkdabnjkadjknajkwdn.png (1/3)
+Copying file: 2017-08-12_overlay~SnapchatdjkWADJawkdkawdjkdabnjkadjknajkwdn.png (1/3)
 Copied file: 2017-08-12_overlay~Snapchat (1/4)
-Skipping file: metadata_file.txt (2/4)
-Copying file: metadata_file.txt (2/4)
-Copied file: metadata_file.txt (2/4)
-Processing file: 2018-09-20_mainFileExample.txt (3/4)
-Processed file: 2018-09-20_mainFileExample.txt (3/4)
-Skipping file: 2016-07-31_b~EiQSFW1rTWFTUkVZMHMyRmxGalowYTYzQRoAGgAyAXxIAlAEYAE (4/4) (No valid date found)
+Skipping file: 2015-09-07_metadata~zip-54061584-8a42-4ada-b960-5b784bc1a26c (2/3)
+Copying file: 2015-09-07_metadata~zip-54061584-8a42-4ada-b960-5b784bc1a26c (2/3)
+Copied file: 2015-09-07_metadata~zip-54061584-8a42-4ada-b960-5b784bc1a26c (2/3)
+Skipping file: b~kdady78adyawdUWAadDNwhadHDWUDKwjoiawhduanklawD-main.jpg (no valid date found)
+Processing file: 2016-07-31_b~EiQSFW1rTWFTUkVZMHMyRmxGalowYTYzQRoAGgAyAXxIAlAEYAE (3/3)
+Processed file: 2016-07-31_b~EiQSFW1rTWFTUkVZMHMyRmxGalowYTYzQRoAGgAyAXxIAlAEYAE (3/3)
 
 Processing complete. All files saved in the respective directories.
 Press 'Y' to close the console, or any other key to keep it open.
