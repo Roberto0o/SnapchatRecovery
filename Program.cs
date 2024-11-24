@@ -1,7 +1,8 @@
-﻿using System;
+using System;
+using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Text.RegularExpressions;
 
 namespace SnapchatRecovery
 {
@@ -14,118 +15,109 @@ namespace SnapchatRecovery
 
             if (string.IsNullOrWhiteSpace(sourceDir) || !Directory.Exists(sourceDir))
             {
-                Console.WriteLine("Invalid directory. Exiting.");
+                Console.WriteLine("Invalid directory path. Exiting program.");
                 return;
             }
 
-            // Determine the name for the new directories
-            string sourceDirName = new DirectoryInfo(sourceDir).Name;
-            string parentDir = Directory.GetParent(sourceDir)?.FullName;
-            if (string.IsNullOrEmpty(parentDir))
-            {
-                Console.WriteLine("Cannot determine the parent directory. Exiting.");
-                return;
-            }
-            string formattedDir = Path.Combine(parentDir, sourceDirName + "_formatted");
-            string discardedDir = Path.Combine(parentDir, sourceDirName + "_discarded");
+            string formattedDir = Path.Combine(Directory.GetParent(sourceDir).FullName,
+                Path.GetFileName(sourceDir) + "_formatted");
+            string discardedDir = Path.Combine(Directory.GetParent(sourceDir).FullName,
+                Path.GetFileName(sourceDir) + "_discarded");
 
             Directory.CreateDirectory(formattedDir);
             Directory.CreateDirectory(discardedDir);
 
-            Console.WriteLine("Fetching files...");
+            string[] allFiles = Directory.GetFiles(sourceDir);
+            List<string> discardedPatterns = new List<string> { "metadata", "overlay~Snapchat", "overlay" };
 
-            // Get all files in the directory excluding unwanted patterns
-            string[] allFiles = Directory.GetFiles(sourceDir)
-                .Where(file => !file.Contains("overlay~Snapchat") && !file.Contains("metadata") && !file.EndsWith("overlay"))
-                .ToArray();
+            int totalFiles = allFiles.Length;
+            int currentFileIndex = 0;
 
-            // Get all discarded files
-            string[] discardedFiles = Directory.GetFiles(sourceDir)
-                .Where(file => file.Contains("overlay~Snapchat") || file.Contains("metadata") || file.EndsWith("overlay"))
-                .ToArray();
-
-            int totalFiles = allFiles.Length + discardedFiles.Length;
-
-            if (totalFiles == 0)
+            foreach (string file in allFiles)
             {
-                Console.WriteLine("No files found in the directory after filtering. Exiting.");
-                return;
-            }
+                currentFileIndex++;
+                string fileName = Path.GetFileName(file);
 
-            Console.WriteLine($"Found {totalFiles} files. Processing...");
-
-            int fileIndex = 0;
-
-            // Copy and log discarded files
-            foreach (string filePath in discardedFiles)
-            {
-                fileIndex++;
-                string fileName = Path.GetFileName(filePath);
-
-                try
+                // Check if the file should be discarded
+                if (discardedPatterns.Any(pattern => fileName.Contains(pattern)) || fileName.EndsWith("overlay"))
                 {
-                    Console.WriteLine($"Copying file: {fileName} ({fileIndex}/{totalFiles})");
-                    string newFilePath = Path.Combine(discardedDir, fileName);
-                    File.Copy(filePath, newFilePath, true);
-                    Console.WriteLine($"Copied file: {fileName} ({fileIndex}/{totalFiles})");
+                    Console.WriteLine($"Skipping file: {fileName} ({currentFileIndex}/{totalFiles})");
+                    string discardedFilePath = Path.Combine(discardedDir, fileName);
+                    File.Copy(file, discardedFilePath, true);
+                    Console.WriteLine($"Copied file: {fileName} ({currentFileIndex}/{totalFiles})");
+                    continue;
                 }
-                catch (Exception ex)
+
+                // Extract the date from the file name
+                DateTime fileDate;
+                if (!TryExtractDateFromFileName(fileName, out fileDate))
                 {
-                    Console.WriteLine($"Error copying file: {fileName} ({fileIndex}/{totalFiles}): {ex.Message}");
+                    Console.WriteLine($"Skipping file: {fileName} ({currentFileIndex}/{totalFiles}) (No valid date found)");
+                    // Copy skipped files to discarded directory
+                    string discardedFilePath = Path.Combine(discardedDir, fileName);
+                    File.Copy(file, discardedFilePath, true);
+                    Console.WriteLine($"Copied file: {fileName} ({currentFileIndex}/{totalFiles})");
+                    continue;
                 }
-            }
 
-            // Process remaining files
-            foreach (string filePath in allFiles)
-            {
-                fileIndex++;
-                string fileName = Path.GetFileName(filePath);
+                Console.WriteLine($"Processing file: {fileName} ({currentFileIndex}/{totalFiles})");
 
-                try
-                {
-                    // Extract date from the file name using regex
-                    Regex dateRegex = new Regex(@"^(\d{4}-\d{2}-\d{2})_");
-                    Match match = dateRegex.Match(fileName);
+                // Set the time to 12:00:00
+                fileDate = fileDate.Date.Add(new TimeSpan(12, 0, 0));
 
-                    if (!match.Success)
-                    {
-                        Console.WriteLine($"Skipping file: {fileName} ({fileIndex}/{totalFiles}) (No valid date found)");
-                        continue;
-                    }
+                // Rename the file
+                string newFileName = RenameFile(fileName);
+                string newFilePath = Path.Combine(formattedDir, newFileName);
 
-                    // Parse the date and set time to 12:00:00
-                    DateTime extractedDate = DateTime.Parse(match.Groups[1].Value).Date.AddHours(12);
+                File.Copy(file, newFilePath, true);
 
-                    Console.WriteLine($"Processing file: {fileName} ({fileIndex}/{totalFiles})");
+                // Adjust the file properties
+                File.SetCreationTime(newFilePath, fileDate);
+                File.SetLastWriteTime(newFilePath, fileDate);
 
-                    // Rename the file: remove date and replace "main" with "snapmem"
-                    string newFileName = Regex.Replace(fileName.Substring(match.Length), "main", "snapmem");
-                    string newFilePath = Path.Combine(formattedDir, newFileName);
-
-                    // Create a copy of the file in the formatted directory
-                    File.Copy(filePath, newFilePath, true);
-
-                    // Set the extracted date as both creation and last write times
-                    File.SetCreationTime(newFilePath, extractedDate);
-                    File.SetLastWriteTime(newFilePath, extractedDate);
-
-                    Console.WriteLine($"Processed file: {fileName} ({fileIndex}/{totalFiles})");
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine($"Error processing file: {fileName} ({fileIndex}/{totalFiles}): {ex.Message}");
-                }
+                Console.WriteLine($"Processed file: {fileName} ({currentFileIndex}/{totalFiles})");
             }
 
             Console.WriteLine("Processing complete. All files saved in the respective directories.");
-
-            // Prompt the user to close the console
             Console.WriteLine("Press 'Y' to close the console, or any other key to keep it open.");
-            var key = Console.ReadKey().Key;
-            if (key == ConsoleKey.Y)
+
+            var key = Console.ReadKey();
+            if (key.Key == ConsoleKey.Y)
             {
-                return;
+                Environment.Exit(0);
             }
+        }
+
+        static bool TryExtractDateFromFileName(string fileName, out DateTime fileDate)
+        {
+            fileDate = default;
+            string[] parts = fileName.Split('_');
+
+            if (parts.Length > 0 && DateTime.TryParseExact(parts[0], "yyyy-MM-dd",
+                CultureInfo.InvariantCulture, DateTimeStyles.None, out fileDate))
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        static string RenameFile(string fileName)
+        {
+            string[] parts = fileName.Split('_');
+
+            if (parts.Length > 1)
+            {
+                // Remove the date and `_`
+                string restOfFileName = string.Join("_", parts.Skip(1));
+
+                // Replace "main" with "snapmem"
+                restOfFileName = restOfFileName.Replace("main", "snapmem");
+
+                return restOfFileName;
+            }
+
+            return fileName;
         }
     }
 }
